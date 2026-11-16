@@ -6,7 +6,7 @@ A home screen for Fire TV that does one job: show your apps and your HDMI inputs
   <img src="../docs/assets/screens/home.png" alt="dumbtv home: a clock, an Apps row and an Inputs row" width="720">
 </p>
 
-- **116 KB.** Plain Java and Android views. No AndroidX, Kotlin, Compose, Play
+- **107 KB.** Plain Java and Android views. No AndroidX, Kotlin, Compose, Play
   Services or any other library.
 - **No network.** There is no `INTERNET` permission, so Android will not let it
   open a connection.
@@ -66,7 +66,6 @@ you open an app. On Fire OS 7 and 8 the Settings button opens Amazon's settings 
 | Accent | white, blue, cyan, green, amber, red, pink, violet |
 | Tiles | small, medium, large |
 | Layout | rows, or a grid that wraps to as many columns as fit |
-| Home position | top (default), bottom: the clock, Options and Settings stay at the top and the rows (with the library banner) move down to the bottom edge, leaving the middle of the screen to the background. Rows that fill the screen anyway stay where they are and scroll as with top |
 | App order | your order, or recently used: the apps row re-sorts on each return home, newest first. It counts apps opened from dumbtv home, plus apps opened any other way (voice, another app) on Fire OS 6, where the launcher already has usage access. Apps never opened keep your order after the rest |
 | All apps section | hidden (default), shown: a separate alphabetical list of every launchable app below your pinned apps. Child lock hides this section |
 | App names | on focus, always, never |
@@ -187,11 +186,11 @@ The icons are the pack author's, under the pack's licence.
 
 ## Languages
 
-dumbtv home follows the TV's language: English, German, Italian and Spanish so far.
-Any other language, and any string a translation lacks, shows in English.
+dumbtv home follows the TV's language: English, German and Spanish so far. Any other
+language, and any string a translation lacks, shows in English.
 
 To add one, copy `res/values/strings.xml` to `res/values-<code>/strings.xml` (for
-example `values-fr`) and translate the text between the tags. Leave out `app_name` and
+example `values-it`) and translate the text between the tags. Leave out `app_name` and
 `guard_label`: `scripts/accessibility.sh` finds the HOME service by that label, so it
 stays English. Keep `%s` and `%d` as they are, and keep option values short, since they
 share a row with their name.
@@ -211,8 +210,6 @@ accent=blue
 tiles=medium
 # rows grid
 layout=rows
-# top bottom
-position=top
 # custom recent (recent = newest first; the history stays in the app's private storage)
 order=custom
 # off on (Child lock hides this section)
@@ -303,12 +300,10 @@ seinfeld.jpg | Seinfeld | com.netflix.ninja | https://www.netflix.com/title/7015
 - Wide pictures work best; the banner crops to about 3.8 : 1. Only the picture on
   screen and the one fading in are held in memory.
 
-`scripts/library.sh [--dry-run] [-y] <folder>` takes a folder with `library.conf` and
-the pictures, crops each picture to the banner (with ImageMagick where it is installed,
-else `sips` on macOS, else not at all; an optional `crop.conf` of `image fraction` lines
-moves the crop, 0 top to 1 bottom), asks before it replaces the TV's library folder, and
-returns to the home screen so the banner reloads. Pictures must sit beside
-`library.conf`; a name with a `/` is skipped.
+`scripts/library.sh <folder>` takes a folder with `library.conf` and the pictures,
+crops each picture to the banner on macOS (`sips`; an optional `crop.conf` of
+`image fraction` lines moves the crop, 0 top to 1 bottom), replaces the TV's library
+folder and returns to the home screen so the banner reloads.
 
 ### Fire OS 8: where adb can write
 
@@ -479,7 +474,7 @@ normal install-time permission; the launcher still has no INTERNET permission.
 The codes have no acknowledgement: a successful transmit does not confirm the
 TV changed input. Use the TV remote or the Cube's configured equipment control
 to return to its HDMI port. BACK in the launcher cannot switch the TV back.
-Tested with a separate launcher build on a third-generation Cube (AFTGAZL,
+Tested as the main launcher after installation and reboot on a third-generation Cube (AFTGAZL,
 Fire OS 7) and a Samsung GQ55S90CATXZG. The owner confirmed switching to
 the PC on HDMI 1. HDMI 3 was the Cube in this setup.
 

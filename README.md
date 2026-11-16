@@ -5,6 +5,12 @@
   </picture>
 </p>
 
+## Fire TV Cube + Samsung S90C fork
+
+This fork uses the launcher 1.9 HOME service and installer tested on a third-generation Fire TV Cube with a Samsung S90C. The Inputs row adds Samsung HDMI 1–4 via infrared. Options include hiding the Cube inputs and using two compact app rows.
+
+To install this fork from source, use `bash launcher/install.sh --build`. The installer without that flag downloads the upstream APK. See the [launcher setup and device notes](launcher/README.md#samsung-hdmi-inputs-this-fork).
+
 <p align="center"><b>Your TV should do what you paid for.</b><br>
 Ads, tracking and clutter out of your Fire TV. Your apps and HDMI inputs stay.</p>
 

@@ -16,6 +16,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.media.tv.TvInputManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -64,8 +65,6 @@ public final class Home extends Activity {
     private Config cfg;
     private TvInputManager tv;
     private int applied = -1, appsGeneration;
-    /** Whether the home screen is the resumed activity; Guard reads it on the same main thread. */
-    static boolean inFront;
     private boolean resumed, landed, unlockOpened;
     private String lastFocusedKind;
     private final Map<String, String> lastIds = new HashMap<>();
@@ -79,8 +78,6 @@ public final class Home extends Activity {
     private Meter meter;
     private Row apps, allApps, inputs;
     private Hero hero;
-    /** Options › Home position › Bottom: the empty stretch between the clock and the rows. */
-    private View spacer;
     private int libraryGeneration;
     private Map<String, Long> recent = new HashMap<>();
     private Tile moving;
@@ -317,7 +314,6 @@ public final class Home extends Activity {
     protected void onResume() {
         super.onResume();
         resumed = true;
-        inFront = true;
         Guard.arrived(this);
         Filter.wake(this);
         cfg.refresh();
@@ -343,7 +339,6 @@ public final class Home extends Activity {
     protected void onPause() {
         super.onPause();
         resumed = false;
-        inFront = false;
         hero.stop();
         stopColorAnimation();
         targetColor = 0;
@@ -694,12 +689,6 @@ public final class Home extends Activity {
         head.addView(chip(getString(R.string.settings), R.drawable.chip_settings, R.drawable.chip_settings_mark,
                 v -> openSettings()));
         column.addView(head, new LinearLayout.LayoutParams(MATCH, WRAP));
-        // Home position › Bottom: the page fills the screen (setFillViewport), and this stretch
-        // takes what the banner and the rows leave of it, so they sit on the bottom edge. When
-        // they do not fit on one screen it gets nothing, and the page scrolls as with Top.
-        spacer = new View(this);
-        spacer.setVisibility(View.GONE);
-        column.addView(spacer, new LinearLayout.LayoutParams(MATCH, 0, 1f));
 
         hero = new Hero(this, ui, io);
         hero.setOnClickListener(v -> hero.openCurrent());
@@ -774,10 +763,6 @@ public final class Home extends Activity {
         return "on".equals(cfg.get(Config.LOCK));
     }
 
-    private boolean atBottom() {
-        return "bottom".equals(cfg.get(Config.POSITION));
-    }
-
     /**
      * A chip in the corner. Options › Chip style picks its look: the text chip (the default), or
      * a round icon button whose name shows next to the icon only while it has the focus, so the
@@ -838,7 +823,6 @@ public final class Home extends Activity {
         meter.setVisibility("on".equals(cfg.get(Config.MEMORY)) ? View.VISIBLE : View.GONE);
         meter.setAccent(accent);
         hero.setAccent(accent);
-        spacer.setVisibility(atBottom() ? View.VISIBLE : View.GONE);
         apps.title.setText(getString("on".equals(cfg.get(Config.ALL_APPS))
                 ? R.string.row_pinned_apps : R.string.row_apps).toUpperCase(Locale.ROOT));
         String state = artState();
@@ -1034,10 +1018,8 @@ public final class Home extends Activity {
         ViewGroup.LayoutParams params = apps.title.getLayoutParams();
         if (!(params instanceof LinearLayout.LayoutParams)) return;
         LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) params;
-        // The library banner takes that space when it shows, and so does All apps. With Home
-        // position › Bottom the spacer already puts the apps on the bottom edge: the shift is
-        // measured from the display, not the page, and could push them below it.
-        int targetMargin = (!atBottom() && !"grid".equals(cfg.get(Config.LAYOUT)) && isInputsHidden()
+        // The library banner takes that space when it shows, and so does All apps.
+        int targetMargin = (!"grid".equals(cfg.get(Config.LAYOUT)) && isInputsHidden()
                 && !heroShown() && allApps.title.getVisibility() != View.VISIBLE) ? appRowShift() : 0;
         if (lp.topMargin != targetMargin) {
             lp.topMargin = targetMargin;
@@ -1303,13 +1285,12 @@ public final class Home extends Activity {
     }
 
     /**
-     * On Fire OS 8, and on a Fire TV Cube on Fire OS 7, the Appstore's launcher entry opens
-     * Amazon's home with its apps grid, which Guard then replaces with ours, so the tile seemed
-     * to do nothing (#133). Its store screen is opened instead; where the entry works, it shows
-     * that same screen.
+     * On Fire OS 8 the Appstore's launcher entry opens Amazon's home with its apps grid, which
+     * Guard then replaces with ours, so the tile seemed to do nothing (#133). Its store screen is
+     * opened instead. On Fire OS 7 the entry opens the store itself.
      */
     private Intent appIntent(Item it) {
-        if (APPSTORE.equals(it.id)) {
+        if (Build.VERSION.SDK_INT >= 30 && APPSTORE.equals(it.id)) {
             Intent store = new Intent(Intent.ACTION_MAIN)
                     .setClassName(APPSTORE, APPSTORE + ".ade.ADEHomeActivity");
             if (store.resolveActivity(getPackageManager()) != null) return store;
