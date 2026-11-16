@@ -474,7 +474,7 @@ normal install-time permission; the launcher still has no INTERNET permission.
 The codes have no acknowledgement: a successful transmit does not confirm the
 TV changed input. Use the TV remote or the Cube's configured equipment control
 to return to its HDMI port. BACK in the launcher cannot switch the TV back.
-Tested with a separate launcher build on a third-generation Cube (AFTGAZL,
+Tested as the main launcher after installation and reboot on a third-generation Cube (AFTGAZL,
 Fire OS 7) and a Samsung GQ55S90CATXZG. The owner confirmed switching to
 the PC on HDMI 1. HDMI 3 was the Cube in this setup.
 
