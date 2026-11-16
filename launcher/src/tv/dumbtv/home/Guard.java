@@ -81,6 +81,12 @@ public final class Guard extends AccessibilityService {
     }
 
     private static void home(Context c, long delayMs) {
+        // On the third-generation Cube running Fire OS 7, the HOME alarm can leave
+        // Amazon in front. Its accessibility service can open Home directly.
+        if ("AFTGAZL".equals(Build.MODEL) && Build.VERSION.SDK_INT == 28) {
+            c.startActivity(new Intent(c, Home.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            return;
+        }
         AlarmManager alarms = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
         alarms.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + delayMs,
                 launch(c));
